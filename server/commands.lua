@@ -9,7 +9,7 @@ local function parseArg(src,spec,value)
     return value
 end
 function C.register(def,handler)
-    assert(type(def)=='table' and type(def.name)=='string');assert(type(handler)=='function')
+    assert(type(def)=='table' and type(def.name)=='string','command definition required');assert(SzCore.IsCallable(handler),'command handler required')
     C[def.name]={def=def,handler=handler,resource=GetInvokingResource()}
     RegisterCommand(def.name,function(source,args,raw)
         if def.permission and not SzCore.HasPermission(source,def.permission) then TriggerClientEvent('szcore_ui:notify',source,{type='error',description=SzCore.Locale('no_permission')});return end

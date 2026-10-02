@@ -17,3 +17,13 @@ function SzCore.WithLocks(keys, fn)
     return table.unpack(result,2,result.n)
 end
 exports('ValidateInteger', SzCore.Integer)
+
+
+-- Cfx serializes cross-resource Lua function references through MessagePack.
+-- They can arrive as callable tables instead of type == "function".
+function SzCore.IsCallable(value)
+    local valueType = type(value)
+    return valueType == 'function' or valueType == 'table'
+end
+
+exports('IsCallable', SzCore.IsCallable)

@@ -25,7 +25,7 @@ function SzCore.CreateCallback(name, fn, owner)
         return false, 'invalid_callback_name'
     end
 
-    if type(fn) ~= 'function' then
+    if not SzCore.IsCallable(fn) then
         return false, ('invalid_callback_handler:%s'):format(type(fn))
     end
 

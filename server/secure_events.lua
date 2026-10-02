@@ -9,7 +9,7 @@ local function validateSchema(schema,data)
     for k,t in pairs(schema) do if type(data[k])~=t then return false end end;return true
 end
 function SzCore.RegisterSecureEvent(name,options,handler)
-    assert(type(name)=='string' and name~='');assert(type(handler)=='function');options=options or {};local prior=S.definitions[name];if prior and prior.token then RemoveEventHandler(prior.token) end;S.definitions[name]={options=options,handler=handler,resource=GetInvokingResource()}
+    assert(type(name)=='string' and name~='','secure event name required');assert(SzCore.IsCallable(handler),'secure event handler required');options=options or {};local prior=S.definitions[name];if prior and prior.token then RemoveEventHandler(prior.token) end;S.definitions[name]={options=options,handler=handler,resource=GetInvokingResource()}
     RegisterNetEvent(name)
     S.definitions[name].token=AddEventHandler(name,function(data,...)
         local src=source;local d=S.definitions[name];if not d then return end

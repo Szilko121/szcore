@@ -1,7 +1,7 @@
 SzCore.Hooks = SzCore.Hooks or { entries = {}, nextId = 0 }
 function SzCore.RegisterHook(name, callback, options)
     assert(type(name) == 'string' and name ~= '', 'hook name required')
-    assert(type(callback) == 'function', 'hook callback required')
+    assert(SzCore.IsCallable(callback), 'hook callback required')
     SzCore.Hooks.nextId = SzCore.Hooks.nextId + 1
     local id = SzCore.Hooks.nextId
     local list = SzCore.Hooks.entries[name] or {}

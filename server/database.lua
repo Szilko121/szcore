@@ -15,6 +15,81 @@ function DB.ensureAccount(identifier, name)
     return MySQL.prepare.await([[INSERT INTO szcore_accounts (license,display_name) VALUES (?,?)
       ON DUPLICATE KEY UPDATE display_name=VALUES(display_name),last_seen=CURRENT_TIMESTAMP]], {identifier,name or 'Unknown'})
 end
+
+local function identifierPlaceholders(identifiers)
+    if type(identifiers) ~= 'table' or #identifiers == 0 then
+        return nil
+    end
+
+    local placeholders = {}
+    for i = 1, #identifiers do
+        placeholders[i] = '?'
+    end
+
+    return table.concat(placeholders, ',')
+end
+
+function DB.listCharactersAny(identifiers)
+    local placeholders = identifierPlaceholders(identifiers)
+    if not placeholders then return {} end
+
+    return MySQL.query.await(
+        ('SELECT citizenid,slot,firstname,lastname,birthdate,gender,nationality,cash,bank,job,job_grade,last_seen,license FROM szcore_characters WHERE license IN (%s) ORDER BY slot ASC'):format(placeholders),
+        identifiers
+    ) or {}
+end
+
+function DB.loadCharacterAny(identifiers, citizenid)
+    local placeholders = identifierPlaceholders(identifiers)
+    if not placeholders then return nil end
+
+    local params = {}
+    for i = 1, #identifiers do params[#params + 1] = identifiers[i] end
+    params[#params + 1] = citizenid
+
+    local row = MySQL.single.await(
+        ('SELECT * FROM szcore_characters WHERE license IN (%s) AND citizenid=? LIMIT 1'):format(placeholders),
+        params
+    )
+
+    if not row then return nil end
+
+    row.metadata = decode(row.metadata, {})
+    row.position = decode(row.position, SzCoreConfig.DefaultPosition)
+    row.permissions = decode(row.permissions, {})
+    row.job_duty = row.job_duty == 1 or row.job_duty == true
+
+    return row
+end
+
+function DB.slotTakenAny(identifiers, slot)
+    local placeholders = identifierPlaceholders(identifiers)
+    if not placeholders then return false end
+
+    local params = {}
+    for i = 1, #identifiers do params[#params + 1] = identifiers[i] end
+    params[#params + 1] = slot
+
+    return MySQL.scalar.await(
+        ('SELECT 1 FROM szcore_characters WHERE license IN (%s) AND slot=? LIMIT 1'):format(placeholders),
+        params
+    ) ~= nil
+end
+
+function DB.deleteCharacterAny(identifiers, citizenid)
+    local placeholders = identifierPlaceholders(identifiers)
+    if not placeholders then return 0 end
+
+    local params = {}
+    for i = 1, #identifiers do params[#params + 1] = identifiers[i] end
+    params[#params + 1] = citizenid
+
+    return MySQL.update.await(
+        ('DELETE FROM szcore_characters WHERE license IN (%s) AND citizenid=?'):format(placeholders),
+        params
+    )
+end
+
 function DB.listCharacters(identifier)
     return MySQL.query.await([[SELECT citizenid,slot,firstname,lastname,birthdate,gender,nationality,cash,bank,job,job_grade,last_seen
       FROM szcore_characters WHERE license=? ORDER BY slot ASC]], {identifier}) or {}

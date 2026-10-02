@@ -35,12 +35,8 @@ local function getIdentifiers(source)
         end
     end
 
-    for i = 1, #raw do
-        local identifier = raw[i]
-        if not seen[identifier] then
-            seen[identifier] = true
-            ordered[#ordered + 1] = identifier
-        end
+    if #ordered == 0 and raw[1] then
+        ordered[1] = raw[1]
     end
 
     return ordered

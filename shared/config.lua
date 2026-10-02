@@ -1,7 +1,7 @@
 SzCoreConfig = {
     Debug = false,
     Version = '1.4.0-rc1',
-    IdentifierPriority = { 'license2', 'license' },
+    IdentifierPriority = { 'license', 'license2' },
     MaxCharacters = 4,
     AutoSaveInterval = 300000,
     PositionSaveDistance = 10.0,
